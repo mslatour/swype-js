@@ -7,15 +7,17 @@ function Graphical(){
   var _y = 0;
   var _width = 30;
   var _height = 30;
+  var _rotate = 0;
+
+  var _hide = false;
   
   var _enlarged = false;
-  var _snapped = false;
 
   var _layer = null;
   
-  this.getX = function(){ return _x; }
+  this.getX = function(){ return Math.round(_x); }
   this.setX = function(x){ _x = x; }
-  this.getY = function(){ return _y; }
+  this.getY = function(){ return Math.round(_y); }
   this.setY = function(y){ _y = y; }
 
   this.getHeight = function(){ return _height; };
@@ -29,9 +31,45 @@ function Graphical(){
     this.tell("onChangeWidth", {width:Math.floor(width)});
   };
 
+  this.hide = function(){ _hide = true; };
+  this.show = function(){ _hide = false; };
+  this.isHidden = function(){ return _hide; };
+  
   this.scale = function(scale){
     this.setWidth(this.getWidth()*scale);
     this.setHeight(this.getHeight()*scale);
+  }
+
+  this.rotate = function(rotate){
+    _rotate = rotate;
+  }
+
+  this.getRotation = function(){ return _rotate; }
+  
+  this.getDrawRotation = function(){
+    return this.getRotation();
+  }
+  
+  /**
+   * Scale to fit inside box
+   * int bw        - Width of box
+   * int bh        - Height of box
+   * boolean force - Force upscale
+   */
+  this.scaleToBox = function(bw, bh, force){
+    var w = this.getWidth(); 
+    var h = this.getHeight();
+    if( w > h ){
+      if( force || w > bw ){
+        this.setWidth(bw);
+        this.setHeight((h/w)*bw);
+      }
+    }else{
+      if( force || h > bh ){
+        this.setWidth((w/h)*bh);
+        this.setHeight(bh);
+      }
+    }
   }
 
   this.isEnlarged = function(){ return _enlarged; };
@@ -61,11 +99,6 @@ function Graphical(){
 
   this.getLayer = function(){ return _layer; };
 
-  this.getSnapped = function(){ return _snapped; };
-  this.setSnapped = function(region){
-    _snapped = region;
-  }
-
   this.contains = function(e){
     var x = e.canvasX, y = e.canvasY;
     return (
@@ -82,14 +115,31 @@ function Graphical(){
     this.tell("onMove", {x:x, y:y});
   }
 
-  this.beforeDraw = function(context){}
+  this.moveToCenter = function(){
+    this.move(
+      (this.getLayer().getApplication().getWidth()/2)-(this.getWidth()/2),
+      (this.getLayer().getApplication().getHeight()/2)-(this.getHeight()/2)
+    )
+  }
+
+  this.beforeDraw = function(context){
+    context.save();
+    context.translate(this.getX(),this.getY());
+    //context.rotate(Math.PI*2*(_rotate/360));
+    context.rotate(this.getDrawRotation());
+  }
   this.draw = function(context){}
-  this.afterDraw = function(context){}
+  this.afterDraw = function(context){
+    context.restore();
+
+  }
 
   this.paint = function(context){
-    this.beforeDraw(context);
-    this.draw(context);
-    this.afterDraw(context);
+    if(!this.isHidden()){
+      this.beforeDraw(context);
+      this.draw(context);
+      this.afterDraw(context);
+    }
   }
 
   this.onDragStart = function(e){
@@ -119,28 +169,6 @@ function Graphical(){
     this.tell("onDrag", e);
   }
 
-  this.onSnap = function(region){
-    this.setSnapped(region);
-    var object = this;
-    var moveToTopListener,
-    moveToTopListener = region.getLayer().listen("onMoveToTop", function(e){
-      moveToTopListener.mute = true;
-      object.getLayer().moveToTop();
-      moveToTopListener.mute = false;
-    });
-    var regionMoveListener, ownMoveListener;
-    ownMoveListener = this.listen("onMove", function(e){
-      region.unlisten(regionMoveListener); 
-      region.getLayer().unlisten(moveToTopListener); 
-      object.setSnapped(false);
-    });
-    regionMoveListener = region.listen("onMove", function(e){
-      ownMoveListener.mute = true;
-      object.move(e.x, e.y)
-      ownMoveListener.mute = false;
-    });
-  }
-
   this.onAddedToGroup = function(group){
     var object = this;
     group.listen("onMemberMove", function(e){
@@ -158,34 +186,5 @@ function Graphical(){
         object.enlarge();
       }
     });
-  }
-
-  this.export = function(){
-    var ex = _parent.export.call(this);
-    ex.x = this.getX();
-    ex.y = this.getY();
-    ex.width = this.getWidth();
-    ex.height = this.getHeight();
-    ex.enlarged = this.isEnlarged();
-    ex.layer = this.getLayer().getUniqueId();
-    if(this.getSnapped())
-      ex.snappedBy = this.getSnapped().getUniqueId();
-    return ex;
-  }
-
-  this.import = function(elemStruct, references){
-    _parent.import.call(this, elemStruct, references);
-    if(elemStruct.x) this.move(elemStruct.x-this.getX(),0);
-    if(elemStruct.y) this.move(0,elemStruct.y-this.getY());
-    if(elemStruct.width) this.setWidth(elemStruct.width);
-    if(elemStruct.height) this.setHeight(elemStruct.height);
-    if(elemStruct.enlarged) _enlarged = true;
-    if(elemStruct.layer && elemStruct.layer in references){
-      this.setLayer(references[elemStruct.layer]);
-      references[elemStruct.layer].add(this);
-    }
-    if(elemStruct.snappedBy && elemStruct.snappedBy in references){
-      references[elemStruct.snappedBy].attachGraphical(this);
-    }
   }
 }
