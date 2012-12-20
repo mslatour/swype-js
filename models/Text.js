@@ -26,6 +26,17 @@ function Text(text, color, font){
       if(key in _font) _font[key] = font[key];
     }
   }
+
+  this.scale = function(scale){
+    font = this.getFont();
+    size = font["font-size"];
+    size = size.substr(0,size.length-2);
+    if(parseInt(size) > 0){
+      size = parseInt(size)*scale;
+      this.setFont({"font-size":size+"px"});
+    }
+  }
+
   this.getFontString = function(){
     var str = "";
     var font = this.getFont();

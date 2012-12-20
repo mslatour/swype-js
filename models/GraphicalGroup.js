@@ -28,6 +28,7 @@ function GraphicalGroup(){
     this.addGroupEar(graphical, "onMove", "onMemberMove");
     this.addGroupEar(graphical, "onReduce", "onMemberReduce");
     this.addGroupEar(graphical, "onEnlarge", "onMemberEnlarge");
+    this.addGroupEar(graphical, "onScale", "onMemberScale");
     
     graphical.onAddedToGroup(this);
   }

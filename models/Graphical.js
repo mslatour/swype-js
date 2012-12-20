@@ -38,6 +38,7 @@ function Graphical(){
   this.scale = function(scale){
     this.setWidth(this.getWidth()*scale);
     this.setHeight(this.getHeight()*scale);
+    this.tell("onScale",{"scale":scale});
   }
 
   this.rotate = function(rotate){
@@ -184,6 +185,11 @@ function Graphical(){
     group.listen("onMemberEnlarge", function(e){
       if(e.groupMember != object){
         object.enlarge();
+      }
+    });
+    group.listen("onMemberScale", function(e){
+      if(e.groupMember != object){
+        object.scale(e.scale);
       }
     });
   }
