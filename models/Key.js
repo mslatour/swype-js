@@ -3,6 +3,8 @@ function Key(character){
   var _parent = _self._parent;
   this.className = "Key";
 
+  _character = character;
+
   this.setDraggable(false);
   
   var _character = character;
@@ -30,17 +32,18 @@ function Key(character){
   this.centerText = function(){
     tw = _text.getCalculatedWidth();
     th = _text.getCalculatedHeight();
-    console.log("Text: "+tw+"x"+th);
     w = this.getWidth();
     h = this.getHeight();
-    console.log("Key: "+w+"x"+h);
     _group.muteAll("onMove");
     dw = (w/2-(tw/2))-_text.getX()+this.getX();
     dh = (h/2-(th/2))-_text.getY()+this.getY();
-    console.log("Text position: "+_text.getX()+","+_text.getY());
-    console.log("New position: "+(_text.getX()+dw)+","+(_text.getY()+dh));
     _text.move(dw,dh);
     _group.unMuteAll("onMove");
+  }
+
+  this.onDragOver = function(e){
+    this.tell("onDragOver");
+    e.draggedObject.onDraggedOver(this);
   }
 
   /**

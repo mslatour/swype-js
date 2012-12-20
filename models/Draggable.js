@@ -7,6 +7,7 @@ function Draggable(){
   var _dragTriggerActive = false, _dragging = false, _draggable = true;
   var _draggedOver = null;
 
+  this.getDraggedOver = function(){ return _draggedOver; }
   
   this.getDraggable = function(){ return _draggable; }
   this.setDraggable = function(draggable){

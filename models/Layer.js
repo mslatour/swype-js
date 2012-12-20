@@ -7,6 +7,8 @@ function Layer(application,previousLayer){
   var _graphicals = new Array();
   this._context = null;
 
+  var onMouseMoveTarget = null;
+
   this.getApplication = function(){ return _application; };
   this.setApplication = function(app){ _application = app; };
 
@@ -62,6 +64,18 @@ function Layer(application,previousLayer){
     graphical.setLayer(this);
   }
 
+  this.remove = function(graphical){
+    graphical.setLayer(null);
+    var graphicals = new Array();
+    var j = 0;
+    for(var i = 0; i < _graphicals.length; i++){
+      if( _graphicals[i] != graphical ){
+        graphicals[j++] = _graphicals[i];
+      }
+    }
+    _graphicals = graphicals;
+  }
+
   this.paint = function(context){
     this._context = context;
     for(var i = 0; i < _graphicals.length; i++){
@@ -101,10 +115,31 @@ function Layer(application,previousLayer){
 
   this.onEvent = function(e, callback){
     var object = _self.containedBy(e);
+
     // Propagate event
     if(object){
-      if(object[callback]) object[callback](e);
-      else if(object.onEvent) object.onEvent(e, callback);
+      // Store onMouseMove Target
+      if( callback == "onMouseMove" ){
+        if( onMouseMoveTarget == null ){
+          if("onMouseOver" in object) object.onMouseOver.call(object, e);
+          else if(object.onEvent) object.onEvent.call(object, e, "onMouseOver");
+        }else if( object != onMouseMoveTarget ){
+          if("onMouseOut" in onMouseMoveTarget) onMouseMoveTarget.onMouseOut.call(onMouseMoveTarget, e);
+          else if(onMouseMoveTarget.onEvent) onMouseMoveTarget.onEvent.call(onMouseMoveTarget, e, "onMouseOut");
+          if("onMouseOver" in object) object.onMouseOver.call(object, e);
+          else if(object.onEvent) object.onEvent.call(object, e, "onMouseOver");
+        }
+        if("onMouseMove" in object) object.onMouseMove.call(object, e);
+        else if(object.onEvent) object.onEvent.call(object, e, "onMouseMove");
+        onMouseMoveTarget = object;
+      }else{
+        if(object[callback]) object[callback].call(object,e);
+        else if(object.onEvent) object.onEvent.call(object, e, callback);
+      }
+    }else if( callback == "onMouseMove" && onMouseMoveTarget != null){
+      if("onMouseOut" in onMouseMoveTarget) onMouseMoveTarget.onMouseOut.call(onMouseMoveTarget, e);
+      else if(onMouseMoveTarget.onEvent) onMouseMoveTarget.onEvent.call(onMouseMoveTarget, e, "onMouseOut");
+      onMouseMoveTarget = null;
     }
     
     if(!object || e.bubble){
@@ -113,41 +148,4 @@ function Layer(application,previousLayer){
       }
     }
   }
-
-  this.export = function(){
-    var ex = _parent.export.call(this);
-    if(this.getPreviousLayer() != null) 
-      ex.prevLayer = this.getPreviousLayer().getUniqueId();
-    return ex;
-  }
-
-  this.exportAll = function(scene){
-    if(this.isExportable())
-      scene.layers[this.getUniqueId()] = this.export();
-    for(var i = 0; i < _graphicals.length; i++){
-      if(_graphicals[i].isExportable()){
-        if(
-          _graphicals[i].className == "SnapRegion" || 
-          _graphicals[i].className == "BottomSnapRegion"
-        ){
-          scene.snapRegions[_graphicals[i].getUniqueId()] = _graphicals[i].export();
-        }else{
-          scene.elems[_graphicals[i].getUniqueId()] = _graphicals[i].export();
-        }
-      }
-    }
-    if(this.getNextLayer())
-      scene = this.getNextLayer().exportAll(scene);
-    return scene;
-  }
-
-  this.import = function(elemStruct, references){
-    _parent.import.call(this, elemStruct, references);
-    this.setApplication(references.app);
-    if( elemStruct.prevLayer && elemStruct.prevLayer in references ){
-      this.setPreviousLayer(references[elemStruct.prevLayer]);
-      references[elemStruct.prevLayer].setNextLayer(this);
-    }
-  }
-
 }
