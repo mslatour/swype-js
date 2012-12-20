@@ -75,13 +75,31 @@ function Mouse(area){
   
   EventHelper.registerListener({
     element: _area,
+    on: "touchend",
+    callback: function(e){ _self.onMouseUp(e) }
+  });
+  
+  EventHelper.registerListener({
+    element: _area,
     on: "mousedown",
     callback: function(e){ _self.onMouseDown(e) }
   });
   
   EventHelper.registerListener({
     element: _area,
+    on: "touchstart",
+    callback: function(e){ _self.onMouseDown(e) }
+  });
+  
+  EventHelper.registerListener({
+    element: _area,
     on: "mousemove",
+    callback: function(e){ _self.onMouseMove(e) }
+  });
+  
+  EventHelper.registerListener({
+    element: _area,
+    on: "touchmove",
     callback: function(e){ _self.onMouseMove(e) }
   });
   

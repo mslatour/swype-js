@@ -31,8 +31,23 @@
   <script src='SwypeApp.js'></script>
 </head>
 <body>
+<style>
+  body {
+    margin: 0px;
+    padding: 0px;
+  }
+
+  canvas {
+    margin: 0px;
+    padding: 0px;
+    border: thin solid black;
+    background: #EEE;
+  }
+</style>
 <script>
 window.onload = function(){
+  document.getElementById("canvas").width=window.innerWidth;
+  document.getElementById("canvas").height=(window.innerWidth/768)*192;
   if(document.getElementById("canvas").getContext){
     // Startup App
     var App = new SwypeApp(
@@ -46,7 +61,7 @@ window.onload = function(){
   }
 };
 </script>
-<canvas id="canvas" width="768" height="192" style='border: thin solid black; background: #EEE;'></canvas>
-<textarea cols='50' rows='20' id='log'></textarea>
+<canvas id="canvas" width="768" height="192"></canvas>
+<textarea cols='30' rows='5' id='log'></textarea>
 </body>
 </html>
