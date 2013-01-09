@@ -72,7 +72,7 @@ function SwypeApp(canvas){
     e.canvasY = y;
 
     this.getFloorLayer().getTopLayer().onEvent(e, callback);
-    this.getFloorLayer().paint(this.getContext());
+    this.getFloorLayer().repaint();
   }
 
   this.loadScene = function(scene){

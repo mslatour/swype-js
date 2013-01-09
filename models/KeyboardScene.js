@@ -7,26 +7,31 @@ function KeyboardScene(){
     // Key scale (1 == 31px x 31px)
     scale = app.getCanvas().width/384;
 
+    y_offset = 50;
+    x_offset = 20;
+
     // Top row of characters
-    characters = ["q","w","e","r","t","y","u","i","o","p","[","]"];
+    characters = ["q","w","e","r","t","y","u","i","o","p"];
+    superscript = ["1","2","3","4","5","6","7","8","9","0"];
     for(var i = 0; i < characters.length; i++){
-      key = this.createKey(characters[i], scale);
+      key = this.createKey(characters[i], scale, superscript[i],"");
       app.getFloorLayer().add(key);
-      key.move(i*key.getCalculatedWidth(),0);
+      key.move(x_offset+i*key.getCalculatedWidth(),y_offset);
     }
     // Center row of characters
-    characters = ["a","s","d","f","g","h","j","k","l",":","'"];
+    characters = ["a","s","d","f","g","h","j","k","l"];
     for(var i = 0; i < characters.length; i++){
-      key = this.createKey(characters[i], scale);
+      key = this.createKey(characters[i], scale,"","");
       app.getFloorLayer().add(key);
-      key.move((i+0.5)*key.getCalculatedWidth(),key.getCalculatedHeight());
+      key.move(x_offset+(i+0.5)*key.getCalculatedWidth(),y_offset+key.getCalculatedHeight());
     }
     // Bottom row of characters
-    characters = ["z","x","c","v","b","n","m",",",".","?"];
+    characters = ["z","x","c","v","b","n","m"];
+    subscript = ["@","/","-","'","!","?",","];
     for(var i = 0; i < characters.length; i++){
-      key = this.createKey(characters[i], scale);
+      key = this.createKey(characters[i], scale,"",subscript[i]);
       app.getFloorLayer().add(key);
-      key.move((i+1)*key.getCalculatedWidth(),2*key.getCalculatedHeight());
+      key.move(x_offset+(i+1.5)*key.getCalculatedWidth(),y_offset+2*key.getCalculatedHeight());
     }
     drawlayer = new Layer(app, app.getFloorLayer());
     field = new DragField();
@@ -38,8 +43,8 @@ function KeyboardScene(){
     drawlayer.add(field);
   }
 
-  this.createKey = function(character,scale){
-    key = new Key(character);
+  this.createKey = function(character,scale,superscript, subscript){
+    key = new Key(character, superscript, subscript);
     key.scale(scale);
     return key;
   }
