@@ -15,8 +15,6 @@ function DragField(){
 
   this.onDragStart = function(e){
     _dragpoint = new GraphicalCoordinate(e.canvasX, e.canvasY);
-    _dragpoint.move(e.canvasX, e.canvasY);
-    _dragcoords.push([e.canvasX,e.canvasY]);
     _dragpoint.listen("onDragEnd", function(e){
       _draglayer.remove(_dragpoint);
       _dragpoint = null;
@@ -32,6 +30,7 @@ function DragField(){
     });
     _draglayer.add(_dragpoint);
     _dragpoint.onDragStart(e);
+    _dragpoint.onDrag(e);
   }
 
   this.onDrag = function(e){
